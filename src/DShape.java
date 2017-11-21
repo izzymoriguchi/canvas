@@ -1,29 +1,25 @@
+import java.awt.*;
+
 public class DShape {
-    private int x;
-    private int y;
-    private int width;
-    private int height;
-
-    public DShape(int x, int y, int width, int height) {
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
+    protected DShapeModel dShapeModel; // should hold a pointer to a DShapeModel
+    protected boolean isSelected;
+    public DShape() {
+        isSelected = false;
     }
 
-    public int getHeight() {
-        return height;
+    public void draw(Graphics g) {
+        g.setColor(dShapeModel.getColor());
     }
 
-    public int getWidth() {
-        return width;
+    public int[] getBounds() {
+        return dShapeModel.getBounds();
     }
 
-    public int getX() {
-        return x;
+    public void setdShapeModel(DShapeModel dShapeModel) {
+        this.dShapeModel = dShapeModel;
     }
 
-    public int getY() {
-        return y;
+    public void setSelected(boolean isSelected) {
+        this.isSelected = isSelected;
     }
 }
