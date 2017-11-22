@@ -1,10 +1,8 @@
 import java.awt.*;
 
 public class DShape {
-    protected DShapeModel dShapeModel; // should hold a pointer to a DShapeModel
-    protected boolean isSelected;
+    protected DShapeModel dShapeModel;
     public DShape() {
-        isSelected = false;
     }
 
     public void draw(Graphics g) {
@@ -17,9 +15,19 @@ public class DShape {
 
     public void setdShapeModel(DShapeModel dShapeModel) {
         this.dShapeModel = dShapeModel;
+//        this.dShapeModel.addListener(this);
     }
 
     public void setSelected(boolean isSelected) {
-        this.isSelected = isSelected;
+        dShapeModel.setSelected(isSelected);
     }
+
+    public boolean isSelected() {
+        return dShapeModel.isSelected();
+    }
+
+//        @Override
+//        public void modelChanged(DShapeModel model) {
+//
+//    }
 }

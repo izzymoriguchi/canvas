@@ -1,7 +1,5 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
 public class Whiteboard extends JFrame {
     public Whiteboard(String title) {
@@ -9,15 +7,9 @@ public class Whiteboard extends JFrame {
         setLayout(new BorderLayout());
         Canvas canvas = new Canvas();
         add(canvas, BorderLayout.CENTER);
-//        canvas.addMouseListener(new MouseAdapter() {
-//            @Override
-//            public void mouseClicked(MouseEvent e) {
-//                super.mouseClicked(e);
-//            }
-//        });
 
         ControlFirstRow firstRow = new ControlFirstRow(canvas);
-        ControlSecondRow secondRow = new ControlSecondRow();
+        ControlSecondRow secondRow = new ControlSecondRow(canvas);
         ControlThirdRow thirdRow = new ControlThirdRow();
         ControlFourthRow fourthRow = new ControlFourthRow();
 

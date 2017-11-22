@@ -8,10 +8,11 @@ public class DRect extends DShape {
     @Override
     public void draw(Graphics g) {
         super.draw(g);
-        if (isSelected) {
+        if (isSelected()) {
             g.drawString("x", dShapeModel.getX(), dShapeModel.getY());
 
         }
+        Rectangle test = new Rectangle();
         g.drawRect(dShapeModel.getX(), dShapeModel.getY(), dShapeModel.getWidth(), dShapeModel.getHeight());
 
     }

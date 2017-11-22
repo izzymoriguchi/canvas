@@ -8,7 +8,7 @@ public class DOval extends DShape {
     @Override
     public void draw(Graphics g) {
         super.draw(g);
-        if (isSelected) {
+        if (isSelected()) {
             g.drawString("x", dShapeModel.getX(), dShapeModel.getY());
         }
         g.drawOval(dShapeModel.getX(), dShapeModel.getY(), dShapeModel.getWidth(), dShapeModel.getHeight());
