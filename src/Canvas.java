@@ -6,6 +6,7 @@ import java.util.ArrayList;
 
 public class Canvas extends JPanel implements ModelListener{
     ArrayList<DShape> shapes;
+    Point p;
     public Canvas() {
         super();
         setPreferredSize(new Dimension(400, 400));
@@ -16,6 +17,23 @@ public class Canvas extends JPanel implements ModelListener{
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
                 setSelectedShape(e.getX(), e.getY());
+            }
+
+            int diffX = 0;
+            int diffY = 0;
+            @Override
+            public void mousePressed(MouseEvent e) {
+                super.mousePressed(e);
+                setSelectedShape(e.getX(), e.getY());
+                diffX = e.getX() - getSelectedShape().dShapeModel.getX();
+                diffY = e.getY() - getSelectedShape().dShapeModel.getY();
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                super.mouseReleased(e);
+                getSelectedShape().dShapeModel.setX(e.getX() - diffX);
+                getSelectedShape().dShapeModel.setY(e.getY() - diffY);
             }
         });
     }
@@ -62,6 +80,17 @@ public class Canvas extends JPanel implements ModelListener{
                 break;
             }
         }
+    }
+
+    public DShape getSelectedShape() {
+        DShape selectedShape = null;
+        for (DShape shape : shapes) {
+            if (shape.isSelected()) {
+                selectedShape = shape;
+                break;
+            }
+        }
+        return selectedShape;
     }
 
     @Override

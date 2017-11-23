@@ -12,8 +12,8 @@ public class DRect extends DShape {
             g.drawString("x", dShapeModel.getX(), dShapeModel.getY());
 
         }
-        Rectangle test = new Rectangle();
-        g.drawRect(dShapeModel.getX(), dShapeModel.getY(), dShapeModel.getWidth(), dShapeModel.getHeight());
-
+        Rectangle rect = new Rectangle(dShapeModel.getX(), dShapeModel.getY(),
+                dShapeModel.getWidth(), dShapeModel.getHeight());
+        g.fillRect(rect.x, rect.y, rect.width, rect.height);
     }
 }

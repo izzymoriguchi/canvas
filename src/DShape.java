@@ -15,7 +15,6 @@ public class DShape {
 
     public void setdShapeModel(DShapeModel dShapeModel) {
         this.dShapeModel = dShapeModel;
-//        this.dShapeModel.addListener(this);
     }
 
     public void setSelected(boolean isSelected) {
@@ -25,9 +24,4 @@ public class DShape {
     public boolean isSelected() {
         return dShapeModel.isSelected();
     }
-
-//        @Override
-//        public void modelChanged(DShapeModel model) {
-//
-//    }
 }

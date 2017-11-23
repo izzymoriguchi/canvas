@@ -17,6 +17,7 @@ public class ControlFirstRow extends JPanel {
             int y = rand.nextInt(RANDOM_COORDINATE_BOUNDS);
             int width = rand.nextInt(RANDOM_SIZE_BOUNDS);
             int height = rand.nextInt(RANDOM_SIZE_BOUNDS);
+//            System.out.println(dShapeModel.getColor());
             dShapeModel.setX(x);
             dShapeModel.setY(y);
             dShapeModel.setWidth(width);

@@ -7,8 +7,11 @@ public class ControlSecondRow extends JPanel {
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
         JButton setColorButton = new JButton("Set Color");
         setColorButton.addActionListener(e -> {
-            Color initialColor = Color.GRAY;
-            Color newColor = JColorChooser.showDialog(this, "Select a color", initialColor);
+            if (canvas.getSelectedShape()!= null) {
+                Color initialColor = canvas.getSelectedShape().dShapeModel.getColor();
+                Color newColor = JColorChooser.showDialog(this, "Select a color", initialColor);
+                canvas.getSelectedShape().dShapeModel.setColor(newColor);
+            }
         });
         add(setColorButton);
         setVisible(true);

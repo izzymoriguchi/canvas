@@ -11,6 +11,7 @@ public class DOval extends DShape {
         if (isSelected()) {
             g.drawString("x", dShapeModel.getX(), dShapeModel.getY());
         }
-        g.drawOval(dShapeModel.getX(), dShapeModel.getY(), dShapeModel.getWidth(), dShapeModel.getHeight());
+//        g.drawOval(dShapeModel.getX(), dShapeModel.getY(), dShapeModel.getWidth(), dShapeModel.getHeight());
+        g.fillOval(dShapeModel.getX(), dShapeModel.getY(), dShapeModel.getWidth(), dShapeModel.getHeight());
     }
 }
