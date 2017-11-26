@@ -53,6 +53,28 @@ public class Canvas extends JPanel implements ModelListener{
         repaint();
     }
 
+    public void moveFront() {
+        for (DShape shape : shapes) {
+            if (shape.isSelected()) {
+                shapes.remove(shape);
+                shapes.add(shape);
+                break;
+            }
+        }
+        repaint();
+    }
+
+    public void moveBack() {
+        for (DShape shape : shapes) {
+            if (shape.isSelected()) {
+                shapes.remove(shape);
+                shapes.add(0, shape);
+                break;
+            }
+        }
+        repaint();
+    }
+
     public boolean isWithinBounds(int clickedX, int clickedY, int x1, int y1, int x2, int y2) {
         return x1 - 4.5 <= clickedX && clickedX <= x2 + 4.5 && y1 - 4.5 <= clickedY && clickedY <= y2 + 4.5;
     }
