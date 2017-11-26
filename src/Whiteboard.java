@@ -11,7 +11,7 @@ public class Whiteboard extends JFrame {
         ControlFirstRow firstRow = new ControlFirstRow(canvas);
         ControlSecondRow secondRow = new ControlSecondRow(canvas);
         ControlThirdRow thirdRow = new ControlThirdRow();
-        ControlFourthRow fourthRow = new ControlFourthRow();
+        ControlFourthRow fourthRow = new ControlFourthRow(canvas);
 
         JPanel allControls = new JPanel();
         allControls.setLayout(new BoxLayout(allControls, BoxLayout.Y_AXIS));

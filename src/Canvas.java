@@ -12,30 +12,10 @@ public class Canvas extends JPanel implements ModelListener{
         setPreferredSize(new Dimension(400, 400));
         setBackground(Color.white);
         shapes = new ArrayList<>();
-        this.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                super.mouseClicked(e);
-                setSelectedShape(e.getX(), e.getY());
-            }
 
-            int diffX = 0;
-            int diffY = 0;
-            @Override
-            public void mousePressed(MouseEvent e) {
-                super.mousePressed(e);
-                setSelectedShape(e.getX(), e.getY());
-                diffX = e.getX() - getSelectedShape().dShapeModel.getX();
-                diffY = e.getY() - getSelectedShape().dShapeModel.getY();
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                super.mouseReleased(e);
-                getSelectedShape().dShapeModel.setX(e.getX() - diffX);
-                getSelectedShape().dShapeModel.setY(e.getY() - diffY);
-            }
-        });
+        MouseListeners listeners = new MouseListeners();
+        addMouseListener(listeners);
+        addMouseMotionListener(listeners);
     }
 
     @Override
@@ -43,6 +23,7 @@ public class Canvas extends JPanel implements ModelListener{
         super.paintComponent(g);
         for (DShape shape : shapes) {
             shape.draw(g);
+            shape.drawKnobs(g);
         }
     }
 
@@ -61,9 +42,21 @@ public class Canvas extends JPanel implements ModelListener{
         repaint();
     }
 
-    public boolean isWithinBounds(int clickedX, int clickedY, int x1, int y1, int x2, int y2) {
-        return x1 <= clickedX && clickedX <= x2 && y1 <= clickedY && clickedY <= y2;
+    public void removeShape() {
+        for (DShape shape : shapes) {
+            if (shape.isSelected()) {
+                shape.dShapeModel.removeListener(this);
+                shapes.remove(shape);
+                break;
+            }
+        }
+        repaint();
     }
+
+    public boolean isWithinBounds(int clickedX, int clickedY, int x1, int y1, int x2, int y2) {
+        return x1 - 4.5 <= clickedX && clickedX <= x2 + 4.5 && y1 - 4.5 <= clickedY && clickedY <= y2 + 4.5;
+    }
+
 
     public void setSelectedShape(int x, int y) {
         for (DShape shape : shapes) {
@@ -82,6 +75,21 @@ public class Canvas extends JPanel implements ModelListener{
         }
     }
 
+    public Point[] getSelectedKnob(int x, int y) {
+        Point tHat = null;
+        Point anchor = null;
+        for (DShape shape : shapes) {
+            if (shape.isSelected()) {
+                tHat = shape.getKnobSelected(x, y);
+                if (tHat != null) {
+                    anchor = shape.getAnchor(tHat);
+                }
+
+            }
+        }
+        return new Point[] {tHat, anchor};
+    }
+
     public DShape getSelectedShape() {
         DShape selectedShape = null;
         for (DShape shape : shapes) {
@@ -96,5 +104,57 @@ public class Canvas extends JPanel implements ModelListener{
     @Override
     public void modelChanged(DShapeModel model) {
         repaint();
+    }
+
+    private class MouseListeners extends MouseAdapter {
+        int diffX = 0;
+        int diffY = 0;
+        Point tHat = null;
+        Point anchor = null;
+        Point[] tHatAndAnchor = new Point[2];
+
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            super.mouseClicked(e);
+            setSelectedShape(e.getX(), e.getY());
+        }
+
+        @Override
+        public void mousePressed(MouseEvent e) {
+            setSelectedShape(e.getX(), e.getY());
+            tHatAndAnchor = getSelectedKnob(e.getX(), e.getY());
+            tHat = tHatAndAnchor[0];
+            anchor = tHatAndAnchor[1];
+            if (tHat == null) {
+                diffX = e.getX() - getSelectedShape().dShapeModel.getX();
+                diffY = e.getY() - getSelectedShape().dShapeModel.getY();
+            }
+        }
+
+        @Override
+        public void mouseDragged(MouseEvent e) {
+            if (tHat == null) {
+                getSelectedShape().dShapeModel.setX(e.getX() - diffX);
+                getSelectedShape().dShapeModel.setY(e.getY() - diffY);
+            } else {
+                tHat.x = e.getX();
+                tHat.y = e.getY();
+                int newWidth = Math.abs(tHat.x - anchor.x);
+                int newHeight = Math.abs(tHat.y - anchor.y);
+                if (tHat.x < anchor.x) {
+                    getSelectedShape().dShapeModel.setX(tHat.x + 4); // ToDo: add 4.5 - half of knob size
+                } else {
+                    getSelectedShape().dShapeModel.setX(anchor.x + 4);
+                }
+
+                if (tHat.y < anchor.y) {
+                    getSelectedShape().dShapeModel.setY(tHat.y + 4);
+                } else {
+                    getSelectedShape().dShapeModel.setY(anchor.y + 4);
+                }
+                getSelectedShape().dShapeModel.setWidth(newWidth);
+                getSelectedShape().dShapeModel.setHeight(newHeight);
+            }
+        }
     }
 }
