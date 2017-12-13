@@ -4,8 +4,8 @@ public class DShape {
     protected DShapeModel dShapeModel;
     protected static final int KNOB_SIZE = 9;
     protected Point[] knobs;
-    public DShape() {
-    }
+    private boolean isBeingSaved;
+    public DShape() {}
 
     public void draw(Graphics g) {
         g.setColor(dShapeModel.getColor());
@@ -21,18 +21,9 @@ public class DShape {
         }
     }
 
-    public int[] getBounds() {
+    public Integer[] getBounds() {
         return dShapeModel.getBounds();
     }
-
-//    public int[] getBigBounds() {
-//        int[] bigBounds = new int[dShapeModel.getBounds().length];
-//        int[] smallBounds = dShapeModel.getBounds();
-//        for (int i = 0; i < bigBounds.length; i++) {
-//            bigBounds[i] = smallBounds[i] +
-//        }
-//        bigBounds[0] =
-//    }
 
     public Point[] getKnobs() {
         int x = dShapeModel.getX();
@@ -83,11 +74,23 @@ public class DShape {
         this.dShapeModel = dShapeModel;
     }
 
+    public DShapeModel getdShapeModel() {
+        return dShapeModel;
+    }
+
     public void setSelected(boolean isSelected) {
         dShapeModel.setSelected(isSelected);
     }
 
     public boolean isSelected() {
         return dShapeModel.isSelected();
+    }
+
+    public void setBeingSaved(boolean beingSaved) {
+        isBeingSaved = beingSaved;
+    }
+
+    public boolean isBeingSaved() {
+        return isBeingSaved;
     }
 }

@@ -1,27 +1,22 @@
 import java.awt.*;
 import java.util.ArrayList;
 
-/**
- * Doesn't do any drawing, but stores the coordinate information of shape
- */
+
 public class DShapeModel {
-    private int x;
-    private int y;
-    private int width;
-    private int height;
-    private Color color;
-    private int[] bounds;
-    private boolean isSelected;
-    private ArrayList<ModelListener> lstOfListeners;
+    protected int id;
+    protected int x;
+    protected int y;
+    protected int width;
+    protected int height;
+    protected Color color;
+    protected Integer[] bounds;
+    protected boolean isSelected;
+    protected ArrayList<ModelListener> lstOfListeners;
 
     public DShapeModel() {
-        x = 0;
-        y = 0;
-        width = 0;
-        height = 0;
         color = Color.GRAY;
         isSelected = false;
-        bounds = new int[4];
+        bounds = new Integer[4];
         lstOfListeners = new ArrayList<>();
     }
 
@@ -50,6 +45,18 @@ public class DShapeModel {
         notifyListeners();
     }
 
+    public void setBounds(Integer[] bounds) {
+        this.bounds = bounds;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getId() {
+        return id;
+    }
+
     public int getX() {
         return x;
     }
@@ -70,7 +77,7 @@ public class DShapeModel {
         return color;
     }
 
-    public int[] getBounds() {
+    public Integer[] getBounds() {
         bounds[0] = getX();
         bounds[1] = getY();
         bounds[2] = getX() + getWidth();
@@ -78,9 +85,25 @@ public class DShapeModel {
         return bounds;
     }
 
+    public int[] getUpperLeftCorderInfo() {
+        return new int[] {x, y};
+    }
+
     public void setSelected(boolean isSelected) {
         this.isSelected = isSelected;
         notifyListeners();
+    }
+
+    public void updateBounds(Point tHat, Point anchor) {
+        setX(Math.min(tHat.x, anchor.x) + 4);
+        setY(Math.min(tHat.y, anchor.y) + 4);
+        setWidth(Math.abs(tHat.x - anchor.x));
+        setHeight(Math.abs(tHat.y - anchor.y));
+    }
+
+    public void updateLocation(int newX, int newY) {
+        setX(newX);
+        setY(newY);
     }
 
     public boolean isSelected() {
@@ -99,5 +122,15 @@ public class DShapeModel {
         for (ModelListener m : lstOfListeners) {
             m.modelChanged(this);
         }
+    }
+
+    public void mimic(DShapeModel other) {
+        this.setX(other.getX());
+        this.setY(other.getY());
+        this.setColor(other.getColor());
+        this.setWidth(other.getWidth());
+        this.setHeight(other.getHeight());
+        this.setSelected(other.isSelected);
+        this.setBounds(other.getBounds());
     }
 }

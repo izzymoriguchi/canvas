@@ -2,20 +2,38 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
-public class Canvas extends JPanel implements ModelListener{
-    ArrayList<DShape> shapes;
-    Point p;
+public class Canvas extends JPanel implements ModelListener {
+    private ArrayList<DShape> shapes;
+    private Point p;
+    private JTextField textField;
+    private ModelListener tableListener;
+    private ModelListener serverListener;
+    private boolean isNetworkingOn;
     public Canvas() {
         super();
         setPreferredSize(new Dimension(400, 400));
         setBackground(Color.white);
         shapes = new ArrayList<>();
-
         MouseListeners listeners = new MouseListeners();
         addMouseListener(listeners);
         addMouseMotionListener(listeners);
+    }
+
+    public void attachModelListener(ModelListener listener) {
+        this.tableListener = listener;
+    }
+
+    public void attachModelListenerForServer(ModelListener serverListener) {
+        this.serverListener = serverListener;
+    }
+
+    public void notifyTableListener(DShapeModel model) {
+        tableListener.modelChanged(model);
     }
 
     @Override
@@ -23,7 +41,9 @@ public class Canvas extends JPanel implements ModelListener{
         super.paintComponent(g);
         for (DShape shape : shapes) {
             shape.draw(g);
-            shape.drawKnobs(g);
+            if (!shape.isBeingSaved()) {
+                shape.drawKnobs(g);
+            }
         }
     }
 
@@ -38,63 +58,178 @@ public class Canvas extends JPanel implements ModelListener{
             model.addListener(this);
             oval.setdShapeModel(model);
             shapes.add(oval);
+        } else if (model instanceof DLineModel) {
+            DLine line = new DLine();
+            model.addListener(this);
+            line.setdShapeModel(model);
+            shapes.add(line);
+        } else if (model instanceof DTextModel) {
+            DText text = new DText();
+            model.addListener(this);
+            text.setdShapeModel(model);
+            shapes.add(text);
         }
+        notifyTableListener(model);
         repaint();
     }
 
-    public void removeShape() {
+    public void addFirst(DShapeModel model) {
+        if (model instanceof DRectModel) {
+            DRect rect = new DRect();
+            model.addListener(this);
+            rect.setdShapeModel(model);
+            shapes.add(0, rect);
+        } else if (model instanceof DOvalModel) {
+            DOval oval = new DOval();
+            model.addListener(this);
+            oval.setdShapeModel(model);
+            shapes.add(0, oval);
+        } else if (model instanceof DLineModel) {
+            DLine line = new DLine();
+            model.addListener(this);
+            line.setdShapeModel(model);
+            shapes.add(0, line);
+        } else if (model instanceof DTextModel) {
+            DText text = new DText();
+            model.addListener(this);
+            text.setdShapeModel(model);
+            shapes.add(0, text);
+        }
+        notifyTableListener(model);
+        repaint();
+    }
+
+    public DShape removeShape() {
+        DShape shapeToBeRemoved = null;
         for (DShape shape : shapes) {
             if (shape.isSelected()) {
-                shape.dShapeModel.removeListener(this);
+                shapeToBeRemoved = shape;
+                shape.getdShapeModel().removeListener(this);
                 shapes.remove(shape);
+                notifyTableListener(shape.dShapeModel);
+                break;
+            }
+        }
+        repaint();
+        return shapeToBeRemoved;
+    }
+
+    public void removeSpecificShape(DShapeModel model) {
+        for (DShape shape : shapes) {
+            boolean isSame = shape.getdShapeModel().getId() == model.getId();
+            if (isSame) {
+                shape.getdShapeModel().removeListener(this);
+                shapes.remove(shape);
+                notifyTableListener(shape.getdShapeModel());
                 break;
             }
         }
         repaint();
     }
 
-    public void moveFront() {
+    public void saveImage(File file) {
+        for (DShape shape : shapes) {
+            shape.setBeingSaved(true);
+        }
+        BufferedImage image = (BufferedImage) createImage(getWidth(), getHeight());
+        Graphics g = image.getGraphics();
+
+        paintAll(g);
+        g.dispose();
+        try {
+            javax.imageio.ImageIO.write(image, "PNG", file);
+        }
+        catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        for (DShape shape : shapes) {
+            shape.setBeingSaved(false);
+        }
+    }
+
+    public void clearAll() {
+        shapes.clear();
+        repaint();
+    }
+
+    public DShape moveFront() {
+        DShape shapeToBeFront = null;
         for (DShape shape : shapes) {
             if (shape.isSelected()) {
+                shapeToBeFront = shape;
                 shapes.remove(shape);
                 shapes.add(shape);
+                notifyTableListener(shape.getdShapeModel());
                 break;
             }
         }
         repaint();
+        return shapeToBeFront;
     }
 
-    public void moveBack() {
+    public DShape moveBack() {
+        DShape shapeToBeBack = null;
         for (DShape shape : shapes) {
             if (shape.isSelected()) {
+                shapeToBeBack = shape;
                 shapes.remove(shape);
                 shapes.add(0, shape);
+                notifyTableListener(shape.getdShapeModel());
                 break;
             }
         }
         repaint();
+        return shapeToBeBack;
+    }
+
+    public void mimicShape(DShapeModel encodedModel) {
+        for (DShape shape : shapes) {
+            if (shape.getdShapeModel().getId() == encodedModel.getId()) {
+                shape.getdShapeModel().mimic(encodedModel);
+                break;
+            }
+        }
     }
 
     public boolean isWithinBounds(int clickedX, int clickedY, int x1, int y1, int x2, int y2) {
-        return x1 - 4.5 <= clickedX && clickedX <= x2 + 4.5 && y1 - 4.5 <= clickedY && clickedY <= y2 + 4.5;
+        int minX = Math.min(x1, x2);
+        int maxX = Math.max(x1, x2);
+        int minY = Math.min(y1, y2);
+        int maxY = Math.max(y1, y2);
+        return minX - 4.5 <= clickedX && clickedX <= maxX + 4.5 && minY - 4.5 <= clickedY && clickedY <= maxY + 4.5;
     }
 
+    public void setNetworkingOn(boolean networkingOn) {
+        isNetworkingOn = networkingOn;
+    }
 
     public void setSelectedShape(int x, int y) {
         for (DShape shape : shapes) {
             if (shape.isSelected()) {
                 shape.setSelected(false);
+                if (shape.getdShapeModel() instanceof DTextModel) {
+                    ((DTextModel) shape.getdShapeModel()).obtainTextField().setEnabled(false);
+                    ((DTextModel) shape.getdShapeModel()).obtainFontList().setEnabled(false);
+                }
             }
         }
-        // look for the last shape in the list --> means that shape is on top of the other
+
         for (int i = shapes.size() - 1; i >= 0; i--) {
             DShape shape = shapes.get(i);
-            int[] b = shape.getBounds();
+            Integer[] b = shape.getBounds();
             if (isWithinBounds(x, y, b[0], b[1], b[2], b[3])) {
                 shape.setSelected(true);
+                if (shape.getdShapeModel() instanceof DTextModel) {
+                    ((DTextModel) shape.getdShapeModel()).obtainTextField().setEnabled(true);
+                    ((DTextModel) shape.getdShapeModel()).obtainFontList().setEnabled(true);
+                }
                 break;
             }
         }
+    }
+
+    public ArrayList<DShape> getShapes() {
+        return shapes;
     }
 
     public Point[] getSelectedKnob(int x, int y) {
@@ -126,6 +261,10 @@ public class Canvas extends JPanel implements ModelListener{
     @Override
     public void modelChanged(DShapeModel model) {
         repaint();
+        notifyTableListener(model);
+        if (serverListener != null) {
+            serverListener.modelChanged(model);
+        }
     }
 
     private class MouseListeners extends MouseAdapter {
@@ -136,46 +275,35 @@ public class Canvas extends JPanel implements ModelListener{
         Point[] tHatAndAnchor = new Point[2];
 
         @Override
-        public void mouseClicked(MouseEvent e) {
-            super.mouseClicked(e);
-            setSelectedShape(e.getX(), e.getY());
-        }
-
-        @Override
         public void mousePressed(MouseEvent e) {
-            setSelectedShape(e.getX(), e.getY());
-            tHatAndAnchor = getSelectedKnob(e.getX(), e.getY());
-            tHat = tHatAndAnchor[0];
-            anchor = tHatAndAnchor[1];
-            if (tHat == null) {
-                diffX = e.getX() - getSelectedShape().dShapeModel.getX();
-                diffY = e.getY() - getSelectedShape().dShapeModel.getY();
+            if (!isNetworkingOn || serverListener != null) {
+                setSelectedShape(e.getX(), e.getY());
+                tHatAndAnchor = getSelectedKnob(e.getX(), e.getY());
+                tHat = tHatAndAnchor[0];
+                anchor = tHatAndAnchor[1];
+                if (tHat == null) {
+                    if (getSelectedShape() != null) {
+                        int[] upperLeftCordinates = getSelectedShape().getdShapeModel().getUpperLeftCorderInfo();
+                        diffX = e.getX() - upperLeftCordinates[0];
+                        diffY = e.getY() - upperLeftCordinates[1];
+                    }
+                }
             }
         }
 
         @Override
         public void mouseDragged(MouseEvent e) {
-            if (tHat == null) {
-                getSelectedShape().dShapeModel.setX(e.getX() - diffX);
-                getSelectedShape().dShapeModel.setY(e.getY() - diffY);
-            } else {
-                tHat.x = e.getX();
-                tHat.y = e.getY();
-                int newWidth = Math.abs(tHat.x - anchor.x);
-                int newHeight = Math.abs(tHat.y - anchor.y);
-                if (tHat.x < anchor.x) {
-                    getSelectedShape().dShapeModel.setX(tHat.x + 4); // ToDo: add 4.5 - half of knob size
+            if (!isNetworkingOn || serverListener != null) {
+                if (tHat == null) {
+                    if (getSelectedShape() != null) {
+                        getSelectedShape().getdShapeModel().updateLocation(e.getX() - diffX, e.getY() - diffY);
+                    }
                 } else {
-                    getSelectedShape().dShapeModel.setX(anchor.x + 4);
-                }
+                    tHat.x = e.getX();
+                    tHat.y = e.getY();
 
-                if (tHat.y < anchor.y) {
-                    getSelectedShape().dShapeModel.setY(tHat.y + 4);
-                } else {
-                    getSelectedShape().dShapeModel.setY(anchor.y + 4);
+                    getSelectedShape().getdShapeModel().updateBounds(tHat, anchor);
                 }
-                getSelectedShape().dShapeModel.setWidth(newWidth);
-                getSelectedShape().dShapeModel.setHeight(newHeight);
             }
         }
     }
