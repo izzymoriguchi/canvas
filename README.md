@@ -1,1 +1,3 @@
-# cs151-final-project
+# Canvas
+
+A small java whiteboard application.
